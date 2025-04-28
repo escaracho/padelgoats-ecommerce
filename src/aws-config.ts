@@ -1,5 +1,13 @@
 import { Amplify } from 'aws-amplify';
 
+const config = {
+  credentials: {
+    accessKeyId: process.env.CUSTOM_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.CUSTOM_SECRET_ACCESS_KEY || '',
+  },
+  region: process.env.CUSTOM_AWS_REGION || 'sa-east-1',
+};
+
 Amplify.configure({
   Auth: {
     Cognito: {
@@ -12,6 +20,7 @@ Amplify.configure({
     S3: {
       bucket: process.env.NEXT_PUBLIC_S3_BUCKET || '',
       region: process.env.NEXT_PUBLIC_AWS_REGION || 'sa-east-1',
+      credentials: config.credentials,
     }
   }
 }); 
