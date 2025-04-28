@@ -5,7 +5,7 @@ const client = new DynamoDB({});
 const dynamodb = DynamoDBDocument.from(client);
 const tableName = process.env.DYNAMODB_TABLE_NAME;
 
-export const handler = async (event) => {
+export const handler = async () => {
   try {
     const params = {
       TableName: tableName
