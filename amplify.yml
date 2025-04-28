@@ -1,0 +1,33 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm ci
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+appRoot: .
+environmentVariables:
+  # AWS Configuration
+  AWS_REGION: ${env.AWS_REGION}
+  AWS_ACCESS_KEY_ID: ${env.AWS_ACCESS_KEY_ID}
+  AWS_SECRET_ACCESS_KEY: ${env.AWS_SECRET_ACCESS_KEY}
+  NEXT_PUBLIC_API_ENDPOINT: ${env.NEXT_PUBLIC_API_ENDPOINT}
+  NEXT_PUBLIC_AWS_REGION: ${env.NEXT_PUBLIC_AWS_REGION}
+  NEXT_PUBLIC_COGNITO_USER_POOL_ID: ${env.NEXT_PUBLIC_COGNITO_USER_POOL_ID}
+  NEXT_PUBLIC_COGNITO_CLIENT_ID: ${env.NEXT_PUBLIC_COGNITO_CLIENT_ID}
+  NEXT_PUBLIC_COGNITO_DOMAIN: ${env.NEXT_PUBLIC_COGNITO_DOMAIN}
+  NEXT_PUBLIC_COGNITO_REGION: ${env.NEXT_PUBLIC_COGNITO_REGION}
+  STRIPE_SECRET_KEY: ${env.STRIPE_SECRET_KEY}
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+  NEXT_PUBLIC_BASE_URL: ${env.NEXT_PUBLIC_BASE_URL}
+  DYNAMODB_TABLE_NAME: ${env.DYNAMODB_TABLE_NAME}
+  S3_BUCKET_NAME: ${env.S3_BUCKET_NAME}
