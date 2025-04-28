@@ -4,6 +4,22 @@ frontend:
     preBuild:
       commands:
         - npm ci
+        - |
+          # Set environment variables
+          echo "CUSTOM_AWS_REGION=$CUSTOM_AWS_REGION" >> .env
+          echo "CUSTOM_ACCESS_KEY_ID=$CUSTOM_ACCESS_KEY_ID" >> .env
+          echo "CUSTOM_SECRET_ACCESS_KEY=$CUSTOM_SECRET_ACCESS_KEY" >> .env
+          echo "NEXT_PUBLIC_API_ENDPOINT=$NEXT_PUBLIC_API_ENDPOINT" >> .env
+          echo "NEXT_PUBLIC_AWS_REGION=$NEXT_PUBLIC_AWS_REGION" >> .env
+          echo "NEXT_PUBLIC_COGNITO_USER_POOL_ID=$NEXT_PUBLIC_COGNITO_USER_POOL_ID" >> .env
+          echo "NEXT_PUBLIC_COGNITO_CLIENT_ID=$NEXT_PUBLIC_COGNITO_CLIENT_ID" >> .env
+          echo "NEXT_PUBLIC_COGNITO_DOMAIN=$NEXT_PUBLIC_COGNITO_DOMAIN" >> .env
+          echo "NEXT_PUBLIC_COGNITO_REGION=$NEXT_PUBLIC_COGNITO_REGION" >> .env
+          echo "STRIPE_SECRET_KEY=$STRIPE_SECRET_KEY" >> .env
+          echo "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=$NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY" >> .env
+          echo "NEXT_PUBLIC_BASE_URL=$NEXT_PUBLIC_BASE_URL" >> .env
+          echo "DYNAMODB_TABLE_NAME=$DYNAMODB_TABLE_NAME" >> .env
+          echo "S3_BUCKET_NAME=$S3_BUCKET_NAME" >> .env
     build:
       commands:
         - npm run build
