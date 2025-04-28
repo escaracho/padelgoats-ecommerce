@@ -1,13 +1,17 @@
-const AWS = require('aws-sdk');
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+import { DynamoDB } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 
-exports.handler = async (event) => {
+const client = new DynamoDB({});
+const dynamodb = DynamoDBDocument.from(client);
+const tableName = process.env.DYNAMODB_TABLE_NAME;
+
+export const handler = async (event) => {
   try {
     const params = {
-      TableName: 'padelgoats_productos'
+      TableName: tableName
     };
     
-    const data = await dynamodb.scan(params).promise();
+    const data = await dynamodb.scan(params);
     
     return {
       statusCode: 200,
@@ -18,6 +22,7 @@ exports.handler = async (event) => {
       body: JSON.stringify(data.Items)
     };
   } catch (error) {
+    console.error('Error:', error);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: error.message })
