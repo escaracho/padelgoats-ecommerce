@@ -74,8 +74,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const currentUser = await getCurrentUser();
       console.log('Current user:', currentUser);
       setUser(currentUser as CognitoUser);
-    } catch (error) {
-      console.log('Error getting current user:', error);
+    } catch {
+      // User is not authenticated - this is a normal state
+      console.log('No authenticated user');
       setUser(null);
     } finally {
       setLoading(false);
