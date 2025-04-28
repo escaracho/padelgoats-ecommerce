@@ -9,28 +9,19 @@ export async function getProductos(): Promise<Producto[]> {
     const url = `${API_ENDPOINT}/productos`;
     console.log('Fetching productos from:', url);
 
-    const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
+    // Simple fetch with minimal configuration
+    const response = await fetch(url);
     
     console.log('Response status:', response.status);
-    console.log('Response headers:', {
-      'cors': response.headers.get('access-control-allow-origin'),
-      'content-type': response.headers.get('content-type')
-    });
-
-    if (!response.ok) {
+    if (response.ok) {
+      const data = await response.json();
+      console.log('Productos received:', data);
+      return data;
+    } else {
       const errorText = await response.text();
-      console.error(`Error HTTP: ${response.status}`);
-      console.error('Error response:', errorText);
+      console.error(`Error HTTP ${response.status}:`, errorText);
       return [];
     }
-    
-    const data = await response.json();
-    console.log('Productos received:', data.length, 'items');
-    return data;
   } catch (error) {
     console.error('Error fetching productos:', error);
     return [];
@@ -42,22 +33,19 @@ export async function getProductoById(id: string): Promise<Producto | null> {
     const url = `${API_ENDPOINT}/productos/${id}`;
     console.log('Fetching producto by id from:', url);
 
-    const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
+    // Simple fetch with minimal configuration
+    const response = await fetch(url);
     
-    if (!response.ok) {
+    console.log('Response status:', response.status);
+    if (response.ok) {
+      const data = await response.json();
+      console.log('Producto received:', data);
+      return data;
+    } else {
       const errorText = await response.text();
-      console.error(`Error HTTP: ${response.status}`);
-      console.error('Error response:', errorText);
+      console.error(`Error HTTP ${response.status}:`, errorText);
       return null;
     }
-    
-    const data = await response.json();
-    console.log('Producto data:', data);
-    return data;
   } catch (error) {
     console.error(`Error fetching producto ${id}:`, error);
     return null;
