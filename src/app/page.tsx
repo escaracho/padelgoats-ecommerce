@@ -1,20 +1,37 @@
+'use client';
+
 import { getProductos } from './services/api';
 import ProductCard from './components/product/ProductCard';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Suspense } from 'react';
+import { useEffect, useState } from 'react';
+import { Producto } from './models/types';
 
-export default async function Home() {
-  const productos = await getProductos();
-  
-  // Ordenar productos: primero los que tienen stock
-  const productosOrdenados = productos?.sort((a, b) => {
-    const stockA = parseInt(a.Stock);
-    const stockB = parseInt(b.Stock);
-    if (stockA > 0 && stockB === 0) return -1;
-    if (stockA === 0 && stockB > 0) return 1;
-    return 0;
-  });
+export default function Home() {
+  const [productos, setProductos] = useState<Producto[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        const data = await getProductos();
+        // Ordenar productos: primero los que tienen stock
+        const productosOrdenados = data?.sort((a, b) => {
+          const stockA = parseInt(a.Stock);
+          const stockB = parseInt(b.Stock);
+          if (stockA > 0 && stockB === 0) return -1;
+          if (stockA === 0 && stockB > 0) return 1;
+          return 0;
+        });
+        setProductos(productosOrdenados || []);
+      } catch (error) {
+        console.error('Error loading products:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadProducts();
+  }, []);
 
   return (
     <div className="min-h-screen bg-white">
@@ -22,13 +39,13 @@ export default async function Home() {
       <section className="relative h-[600px] w-full overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="https://padelgoats-images.s3.sa-east-1.amazonaws.com/BANNER+FINAL+1+copy.webp" // Asegúrate de tener esta imagen en tu carpeta public
+            src="https://padelgoats-images.s3.sa-east-1.amazonaws.com/BANNER+FINAL+1+copy.webp"
             alt="Banner Padel"
             fill
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-black/40" /> {/* Overlay oscuro */}
+          <div className="absolute inset-0 bg-black/40" />
         </div>
         <div className="relative container mx-auto flex h-full flex-col items-center justify-center px-4 text-center">
           <h1 className="mb-6 text-5xl font-bold text-white md:text-7xl">
@@ -54,7 +71,7 @@ export default async function Home() {
             <Link href="/productos?categoria=principiante" className="group relative overflow-hidden rounded-lg">
               <div className="aspect-[4/3] overflow-hidden">
                 <Image
-                  src="https://padelgoats-images.s3.sa-east-1.amazonaws.com/logos/nox.jpg" // Añade esta imagen
+                  src="https://padelgoats-images.s3.sa-east-1.amazonaws.com/logos/nox.jpg"
                   alt="Nox"
                   width={400}
                   height={300}
@@ -66,7 +83,7 @@ export default async function Home() {
             <Link href="/productos?categoria=intermedio" className="group relative overflow-hidden rounded-lg">
               <div className="aspect-[4/3] overflow-hidden">
                 <Image
-                  src="https://padelgoats-images.s3.sa-east-1.amazonaws.com/logos/bullpadel.jpg" // Añade esta imagen
+                  src="https://padelgoats-images.s3.sa-east-1.amazonaws.com/logos/bullpadel.jpg"
                   alt="Bullpadel"
                   width={400}
                   height={300}
@@ -78,7 +95,7 @@ export default async function Home() {
             <Link href="/productos?categoria=avanzado" className="group relative overflow-hidden rounded-lg">
               <div className="aspect-[4/3] overflow-hidden">
                 <Image
-                  src="https://padelgoats-images.s3.sa-east-1.amazonaws.com/logos/adidas.jpg" // Añade esta imagen
+                  src="https://padelgoats-images.s3.sa-east-1.amazonaws.com/logos/adidas.jpg"
                   alt="Adidas"
                   width={400}
                   height={300}
@@ -104,9 +121,16 @@ export default async function Home() {
           </div>
           
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-6">
-            {productosOrdenados?.slice(0, 12).map(producto => (
-              <ProductCard key={producto.ProductoID} producto={producto} />
-            ))}
+            {loading ? (
+              // Loading skeleton
+              [...Array(12)].map((_, i) => (
+                <div key={i} className="h-80 animate-pulse rounded-lg bg-gray-200" />
+              ))
+            ) : (
+              productos?.slice(0, 12).map(producto => (
+                <ProductCard key={producto.ProductoID} producto={producto} />
+              ))
+            )}
           </div>
         </div>
       </section>
