@@ -2,16 +2,53 @@ import { NextResponse } from 'next/server';
 import { stripe } from '@/app/config/stripe';
 import { headers } from 'next/headers';
 
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  });
+}
+
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { items } = body;
-    
-    if (!items || items.length === 0) {
+    // Validate request origin
+    const headersList = headers();
+    const origin = headersList.get('origin') || '';
+    const allowedOrigins = [
+      process.env.NEXT_PUBLIC_SITE_URL || '',
+      'http://localhost:3000',
+      'https://master.d3dtekhglrfuc9.amplifyapp.com'
+    ].filter(Boolean);
+
+    // CORS headers
+    const responseHeaders = {
+      'Access-Control-Allow-Origin': allowedOrigins.includes(origin) ? origin : allowedOrigins[0],
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    };
+
+    // Parse request body
+    const body = await req.json().catch(() => null);
+    if (!body || !body.items || !Array.isArray(body.items) || body.items.length === 0) {
       return NextResponse.json(
-        { error: 'No items provided' },
-        { status: 400 }
+        { error: 'Invalid request body' },
+        { status: 400, headers: responseHeaders }
       );
+    }
+
+    // Validate items
+    const { items } = body;
+    for (const item of items) {
+      if (!item.Nombre || !item.Precio || !item.quantity) {
+        return NextResponse.json(
+          { error: 'Invalid item data' },
+          { status: 400, headers: responseHeaders }
+        );
+      }
     }
 
     // Create line items for Stripe
@@ -20,68 +57,69 @@ export async function POST(req: Request) {
         currency: 'ars',
         product_data: {
           name: item.Nombre,
-          description: item.Marca,
-          images: [item.ImagenURL],
+          description: item.Marca || '',
+          images: item.ImagenURL ? [item.ImagenURL] : [],
         },
-        unit_amount: Math.round(parseFloat(item.Precio) * 100), // Convert to cents and ensure integer
+        unit_amount: Math.round(parseFloat(item.Precio) * 100),
       },
       quantity: item.quantity,
     }));
 
-    // Get the site URL from environment variables or headers
-    const headersList = headers();
+    // Get the site URL
     const host = headersList.get('host') || 'localhost:3000';
     const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
-    const origin = process.env.NEXT_PUBLIC_SITE_URL || `${protocol}://${host}`;
-
-    console.log('Checkout configuration:', {
-      origin,
-      host,
-      protocol,
-      env: process.env.NODE_ENV,
-      siteUrl: process.env.NEXT_PUBLIC_SITE_URL
-    });
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `${protocol}://${host}`;
 
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
-      success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/carrito`,
+      success_url: `${siteUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${siteUrl}/carrito`,
       metadata: {
         orderId: Date.now().toString(),
       },
       shipping_address_collection: {
-        allowed_countries: ['AR'], // Argentina
+        allowed_countries: ['AR'],
       },
       billing_address_collection: 'required',
+      locale: 'es',
+    }).catch((error) => {
+      console.error('Stripe session creation error:', error);
+      throw new Error(error.message);
     });
 
     if (!session?.url) {
       throw new Error('Failed to create checkout session URL');
     }
 
-    return NextResponse.json({ sessionId: session.id, url: session.url });
+    return NextResponse.json(
+      { sessionId: session.id, url: session.url },
+      { headers: responseHeaders }
+    );
   } catch (error: any) {
-    console.error('Stripe checkout error:', {
-      error: error.message,
+    console.error('Checkout error:', {
+      message: error.message,
       type: error.type,
       code: error.code,
       stack: error.stack,
     });
 
-    let errorMessage = 'Error creating checkout session';
-    let statusCode = 500;
-
-    if (error?.type?.startsWith('Stripe')) {
-      errorMessage = error.message;
-      statusCode = 400;
-    }
+    const errorMessage = error?.type?.startsWith('Stripe')
+      ? error.message
+      : 'Error al procesar el pago. Por favor, intenta nuevamente.';
 
     return NextResponse.json(
       { error: errorMessage },
-      { status: statusCode }
+      { 
+        status: error?.type?.startsWith('Stripe') ? 400 : 500,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        }
+      }
     );
   }
 } 
