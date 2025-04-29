@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build --no-lint",
+    "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "amplify:build": "NEXT_TELEMETRY_DISABLED=1 next build --no-lint",
+    "amplify:deploy": "npm run amplify:build"
   },
   "dependencies": {
     "@auth/core": "^0.34.2",

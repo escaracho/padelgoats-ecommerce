@@ -23,7 +23,7 @@ frontend:
           echo "S3_BUCKET_NAME=$S3_BUCKET_NAME" >> .env
     build:
       commands:
-        - npm run build
+        - NEXT_TELEMETRY_DISABLED=1 npm run build
   artifacts:
     baseDirectory: .next
     files:
@@ -31,4 +31,5 @@ frontend:
   cache:
     paths:
       - node_modules/**/*
+      - .next/cache/**/*
 appRoot: .

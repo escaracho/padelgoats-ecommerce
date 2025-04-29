@@ -1,0 +1,13 @@
+{
+  "envName": "prod",
+  "defaultEditor": "code",
+  "buildCommand": "npm run amplify:build",
+  "startCommand": "npm start",
+  "framework": "nextjs",
+  "config": {
+    "SourceDir": "src",
+    "DistributionDir": ".next",
+    "BuildCommand": "npm run amplify:build",
+    "StartCommand": "npm start"
+  }
+} 
