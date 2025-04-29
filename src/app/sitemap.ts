@@ -1,4 +1,4 @@
-import { getProductos } from '@/services/dynamodb';
+import { getProductos } from '@/app/services/dynamodb';
 import { MetadataRoute } from 'next';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
