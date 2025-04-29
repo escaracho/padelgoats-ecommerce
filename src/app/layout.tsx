@@ -7,6 +7,7 @@ import { AuthProvider } from '@/lib/auth/useAuth';
 import { Inter } from 'next/font/google';
 import AmplifyProvider from './components/AmplifyProvider';
 import CurrentYear from './components/CurrentYear';
+import { Toaster } from 'react-hot-toast';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -22,7 +23,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body className={inter.className}>
+      <body className={inter.className} suppressHydrationWarning>
         <AmplifyProvider>
           <AuthProvider>
             <CartProvider>
@@ -77,6 +78,7 @@ export default function RootLayout({
                   <p className="text-sm text-gray-400">&copy; <CurrentYear /> PadelGoats. Todos los derechos reservados.</p>
                 </div>
               </footer>
+              <Toaster position="bottom-right" />
             </CartProvider>
           </AuthProvider>
         </AmplifyProvider>

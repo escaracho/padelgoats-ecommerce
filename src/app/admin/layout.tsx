@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { withAdminAccess } from '@/components/withAdminAccess';
 
-export default function AdminLayout({
+function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -65,4 +66,6 @@ export default function AdminLayout({
       {children}
     </div>
   );
-} 
+}
+
+export default withAdminAccess(AdminLayout); 

@@ -16,6 +16,14 @@ Amplify.configure({
       region: process.env.NEXT_PUBLIC_AWS_REGION || 'sa-east-1',
     }
   },
+  API: {
+    REST: {
+      padelgoatsApi: {
+        endpoint: process.env.NEXT_PUBLIC_API_ENDPOINT || '',
+        region: process.env.NEXT_PUBLIC_AWS_REGION || 'sa-east-1',
+      }
+    }
+  },
   Storage: {
     S3: {
       bucket: process.env.NEXT_PUBLIC_S3_BUCKET || '',
