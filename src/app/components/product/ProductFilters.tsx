@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
-interface Product {
+interface Producto {
   ProductoID: string;
   Nombre: string;
   Marca: string;
@@ -15,90 +15,87 @@ interface Product {
 }
 
 interface ProductFiltersProps {
-  products: Product[];
-  onFilterChange: (filteredProducts: Product[]) => void;
+  productos: Producto[];
+  inStockOnly: boolean;
+  setInStockOnly: (v: boolean) => void;
+  selectedBrands: string[];
+  setSelectedBrands: (brands: string[]) => void;
 }
 
-export default function ProductFilters({ products, onFilterChange }: ProductFiltersProps) {
-  const [sortBy, setSortBy] = useState('');
-  const [brand, setBrand] = useState('');
-  const [availableOnly, setAvailableOnly] = useState(false);
+export default function ProductFilters({ productos, inStockOnly, setInStockOnly, selectedBrands, setSelectedBrands }: ProductFiltersProps) {
+  const [showBestsellers, setShowBestsellers] = useState(true);
+  const [showBrands, setShowBrands] = useState(true);
 
-  // Get unique brands
-  const brands = [...new Set(products?.map(p => p.Marca))];
+  // Get unique brands from productos
+  const brands = Array.from(new Set(productos.map(p => p.Marca)));
 
-  useEffect(() => {
-    let filtered = [...products];
-
-    // Filter by brand
-    if (brand) {
-      filtered = filtered.filter(p => p.Marca === brand);
-    }
-
-    // Filter by availability
-    if (availableOnly) {
-      filtered = filtered.filter(p => parseInt(p.Stock) > 0);
-    }
-
-    // Sort products
-    switch (sortBy) {
-      case 'precio-asc':
-        filtered.sort((a, b) => parseFloat(a.Precio) - parseFloat(b.Precio));
-        break;
-      case 'precio-desc':
-        filtered.sort((a, b) => parseFloat(b.Precio) - parseFloat(a.Precio));
-        break;
-      case 'nombre':
-        filtered.sort((a, b) => a.Nombre.localeCompare(b.Nombre));
-        break;
-      default:
-        // Default sort: available products first
-        filtered.sort((a, b) => {
-          const stockA = parseInt(a.Stock);
-          const stockB = parseInt(b.Stock);
-          if (stockA > 0 && stockB === 0) return -1;
-          if (stockA === 0 && stockB > 0) return 1;
-          return 0;
-        });
-    }
-
-    onFilterChange(filtered);
-  }, [sortBy, brand, availableOnly, products, onFilterChange]);
+  // Handle brand checkbox
+  const handleBrandChange = (brand: string) => {
+    let updated = selectedBrands.includes(brand)
+      ? selectedBrands.filter(b => b !== brand)
+      : [...selectedBrands, brand];
+    setSelectedBrands(updated);
+  };
 
   return (
-    <div className="flex justify-end">
-      <div className="flex flex-wrap items-center gap-4">
-        <select 
-          className="rounded-md border border-gray-300 px-4 py-2 text-gray-700 hover:border-primary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-        >
-          <option value="">Ordenar por</option>
-          <option value="precio-asc">Menor precio</option>
-          <option value="precio-desc">Mayor precio</option>
-          <option value="nombre">Nombre</option>
-        </select>
-
-        <select 
-          className="rounded-md border border-gray-300 px-4 py-2 text-gray-700 hover:border-primary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-          value={brand}
-          onChange={(e) => setBrand(e.target.value)}
-        >
-          <option value="">Todas las marcas</option>
-          {brands.map(marca => (
-            <option key={marca} value={marca}>{marca}</option>
-          ))}
-        </select>
-
-        <label className="flex items-center gap-2 hover:cursor-pointer">
+    <div className="space-y-8">
+      {/* EN STOCK */}
+      <div>
+        <label className="flex items-center gap-2 text-gray-700 text-sm font-semibold cursor-pointer mb-2">
           <input
             type="checkbox"
-            checked={availableOnly}
-            onChange={(e) => setAvailableOnly(e.target.checked)}
-            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary hover:cursor-pointer"
+            checked={inStockOnly}
+            onChange={() => setInStockOnly(!inStockOnly)}
+            className="rounded border-gray-300"
           />
-          <span className="text-sm text-gray-700">Solo productos disponibles</span>
+          En stock
         </label>
+        <hr className="my-4 border-gray-200" />
+      </div>
+      {/* BESTSELLERS */}
+      <div>
+        <button
+          className="flex items-center justify-between w-full text-left uppercase font-bold text-xs text-gray-700 mb-3 tracking-widest hover:text-primary"
+          onClick={() => setShowBestsellers(v => !v)}
+        >
+          <span>BESTSELLERS</span>
+          <span className="text-base font-normal">{showBestsellers ? '-' : '+'}</span>
+        </button>
+        {showBestsellers && (
+          <div className="pl-2 space-y-2 pb-2">
+            <label className="flex items-center gap-2 text-gray-600 text-sm hover:text-primary cursor-pointer">
+              <input type="checkbox" disabled className="rounded border-gray-300" />
+              Palas más vendidas
+            </label>
+          </div>
+        )}
+        <hr className="my-4 border-gray-200" />
+      </div>
+      {/* MARCA */}
+      <div>
+        <button
+          className="flex items-center justify-between w-full text-left uppercase font-bold text-xs text-gray-700 mb-3 tracking-widest hover:text-primary"
+          onClick={() => setShowBrands(v => !v)}
+        >
+          <span>MARCA</span>
+          <span className="text-base font-normal">{showBrands ? '-' : '+'}</span>
+        </button>
+        {showBrands && (
+          <div className="pl-2 space-y-2 max-h-56 overflow-y-auto pr-2 pb-2">
+            {brands.map(brand => (
+              <label key={brand} className="flex items-center gap-2 text-gray-600 text-sm hover:text-primary cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectedBrands.includes(brand)}
+                  onChange={() => handleBrandChange(brand)}
+                  className="rounded border-gray-300"
+                />
+                {brand}
+              </label>
+            ))}
+          </div>
+        )}
+        <hr className="my-4 border-gray-200" />
       </div>
     </div>
   );

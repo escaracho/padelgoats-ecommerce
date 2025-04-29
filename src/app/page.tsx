@@ -127,7 +127,7 @@ export default function Home() {
                 <div key={i} className="h-80 animate-pulse rounded-lg bg-gray-200" />
               ))
             ) : (
-              productos?.slice(0, 12).map(producto => (
+              productos.filter(p => parseInt(p.Stock) > 0).slice(0, 12).map(producto => (
                 <ProductCard key={producto.ProductoID} producto={producto} />
               ))
             )}

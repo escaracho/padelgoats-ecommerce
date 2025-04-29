@@ -63,14 +63,14 @@ export async function GET(
   try {
     const id = params.id;
     
-    const params = {
+    const dynamoParams = {
       TableName: TABLE_NAME,
       Key: {
         ProductoID: id
       }
     };
 
-    const result = await dynamodb.get(params).promise();
+    const result = await dynamodb.get(dynamoParams).promise();
     
     if (!result.Item) {
       return NextResponse.json(
@@ -97,29 +97,59 @@ export async function PUT(
     const id = params.id;
     const updates = await request.json();
 
-    const params = {
+    console.log('PUT request for product ID:', id);
+    console.log('Raw update payload:', updates);
+
+    // List of allowed fields and their DynamoDB attribute names
+    const allowedFields = [
+      { key: 'Nombre', attr: '#n', value: ':n' },
+      { key: 'Descripcion', attr: 'Descripcion', value: ':d' },
+      { key: 'Precio', attr: 'Precio', value: ':p' },
+      { key: 'Stock', attr: 'Stock', value: ':s' },
+      { key: 'Categoria', attr: 'Categoria', value: ':c' },
+      { key: 'Marca', attr: 'Marca', value: ':m' },
+      { key: 'ImagenURL', attr: 'ImagenURL', value: ':i' },
+      { key: 'ImagenHoverURL', attr: 'ImagenHoverURL', value: ':h' },
+      { key: 'Forma', attr: 'Forma', value: ':f' }
+    ];
+
+    let updateExprParts = [];
+    let exprAttrNames = {};
+    let exprAttrValues = {};
+
+    for (const field of allowedFields) {
+      if (updates[field.key] !== undefined && updates[field.key] !== null) {
+        updateExprParts.push(`${field.attr} = ${field.value}`);
+        if (field.key === 'Nombre') {
+          exprAttrNames['#n'] = 'Nombre';
+        }
+        exprAttrValues[field.value] = updates[field.key];
+      }
+    }
+
+    if (updateExprParts.length === 0) {
+      console.log('No valid fields provided for update.');
+      return NextResponse.json(
+        { error: 'No valid fields provided for update.' },
+        { status: 400 }
+      );
+    }
+
+    const dynamoParams = {
       TableName: TABLE_NAME,
       Key: {
         ProductoID: id
       },
-      UpdateExpression: 'set #n = :n, Descripcion = :d, Precio = :p, Stock = :s, Categoria = :c, Marca = :m, ImagenURL = :i, ImagenHoverURL = :h',
-      ExpressionAttributeNames: {
-        '#n': 'Nombre'
-      },
-      ExpressionAttributeValues: {
-        ':n': updates.Nombre,
-        ':d': updates.Descripcion,
-        ':p': updates.Precio,
-        ':s': updates.Stock,
-        ':c': updates.Categoria,
-        ':m': updates.Marca,
-        ':i': updates.ImagenURL,
-        ':h': updates.ImagenHoverURL
-      },
+      UpdateExpression: 'set ' + updateExprParts.join(', '),
+      ExpressionAttributeNames: Object.keys(exprAttrNames).length > 0 ? exprAttrNames : undefined,
+      ExpressionAttributeValues: exprAttrValues,
       ReturnValues: 'ALL_NEW'
     };
 
-    const result = await dynamodb.update(params).promise();
+    console.log('DynamoDB update params:', JSON.stringify(dynamoParams, null, 2));
+
+    const result = await dynamodb.update(dynamoParams).promise();
+    console.log('DynamoDB update result:', result);
     return NextResponse.json(result.Attributes);
   } catch (error) {
     console.error('Error updating product:', error);

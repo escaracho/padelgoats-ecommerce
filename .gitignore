@@ -58,3 +58,4 @@ amplifytools.xcconfig
 # Cache
 .next/cache/
 .cache/
+.cache/a

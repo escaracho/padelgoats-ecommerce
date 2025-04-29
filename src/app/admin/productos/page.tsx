@@ -241,26 +241,11 @@ function ProductosAdmin() {
 
         {/* Product Form Modal */}
         {isFormOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-xl font-semibold">
-                  {selectedProduct ? 'Editar Producto' : 'Nuevo Producto'}
-                </h2>
-                <button
-                  onClick={handleCloseForm}
-                  className="text-gray-400 hover:text-gray-500"
-                >
-                  ✕
-                </button>
-              </div>
-              <ProductForm
-                product={selectedProduct}
-                onSubmit={handleSubmit}
-                onCancel={handleCloseForm}
-              />
-            </div>
-          </div>
+          <ProductForm
+            product={selectedProduct}
+            onSubmit={handleSubmit}
+            onCancel={handleCloseForm}
+          />
         )}
       </div>
     </div>
