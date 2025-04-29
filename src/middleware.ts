@@ -1,22 +1,38 @@
 import { NextResponse } from 'next/server';
-import { fetchAuthSession } from 'aws-amplify/auth';
 import type { NextRequest } from 'next/server';
+import { fetchAuthSession } from 'aws-amplify/auth';
 
 export async function middleware(request: NextRequest) {
-  // Only run middleware on admin routes
+  // Check if the request is for the admin route
   if (request.nextUrl.pathname.startsWith('/admin')) {
+    console.log('Middleware - Admin route detected');
+    
     try {
       const session = await fetchAuthSession();
-      const groups = session.tokens?.accessToken?.payload['cognito:groups'] as string[] || [];
-      
-      if (!groups.includes('admins')) {
-        // Redirect to home if user is not in admin group
+      console.log('Middleware - Session:', session);
+
+      if (!session) {
+        console.log('Middleware - No session found, redirecting to home');
         return NextResponse.redirect(new URL('/', request.url));
       }
-    } catch (error: unknown) {
-      // Log the error for debugging purposes
-      console.error('Authentication error:', error);
-      // Redirect to home if there's any error (including not being authenticated)
+
+      // Get user groups from the Cognito token
+      const groups = session.tokens?.accessToken?.payload['cognito:groups'] as string[] || [];
+      console.log('Middleware - User groups:', groups);
+
+      // Check if user is in the admins group
+      const isAdmin = groups.includes('admins');
+      console.log('Middleware - Is admin:', isAdmin);
+
+      if (!isAdmin) {
+        console.log('Middleware - User is not an admin, redirecting to home');
+        return NextResponse.redirect(new URL('/', request.url));
+      }
+
+      console.log('Middleware - Admin access granted');
+      return NextResponse.next();
+    } catch (error) {
+      console.error('Middleware - Error checking admin access:', error);
       return NextResponse.redirect(new URL('/', request.url));
     }
   }
@@ -25,5 +41,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: '/admin/:path*',
+  matcher: ['/admin/:path*']
 }; 

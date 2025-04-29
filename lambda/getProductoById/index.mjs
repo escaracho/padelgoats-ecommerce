@@ -33,14 +33,16 @@ export const handler = async (event) => {
     const params = {
       TableName: process.env.PRODUCTS_TABLE_NAME,
       Key: {
-        id: { S: productId }
+        ProductoID: { S: productId }
       }
     };
 
+    console.log('Fetching product with params:', params);
     const command = new GetItemCommand(params);
     const response = await dynamoClient.send(command);
 
     if (!response.Item) {
+      console.log('Product not found for ID:', productId);
       return {
         statusCode: 404,
         headers,
@@ -49,6 +51,7 @@ export const handler = async (event) => {
     }
 
     const product = unmarshall(response.Item);
+    console.log('Product found:', product);
 
     return {
       statusCode: 200,
@@ -56,7 +59,7 @@ export const handler = async (event) => {
       body: JSON.stringify(product)
     };
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error fetching product:', error);
     return {
       statusCode: 500,
       headers,
