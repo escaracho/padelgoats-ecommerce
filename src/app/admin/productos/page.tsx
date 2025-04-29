@@ -60,6 +60,10 @@ function ProductosAdmin() {
   };
 
   const handleDelete = async (id: string) => {
+    if (!window.confirm('¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer.')) {
+      return;
+    }
+    
     try {
       setLoading(true);
       await deleteProduct(id);
@@ -164,6 +168,9 @@ function ProductosAdmin() {
                     Categoría
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Forma
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                     Precio
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -195,6 +202,9 @@ function ProductosAdmin() {
                     </td>
                     <td className="whitespace-nowrap px-6 py-4">
                       <div className="text-sm text-gray-900">{product.Categoria}</div>
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4">
+                      <div className="text-sm text-gray-900">{product.Forma || '-'}</div>
                     </td>
                     <td className="whitespace-nowrap px-6 py-4">
                       <div className="text-sm text-gray-900">${Number(product.Precio).toLocaleString('es-AR')}</div>

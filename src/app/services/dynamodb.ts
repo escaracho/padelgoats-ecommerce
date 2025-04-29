@@ -25,6 +25,7 @@ export interface Product {
   Nombre: string;
   Precio: number;
   Stock: number;
+  Forma?: string; // Forma (shape) of the product
 }
 
 export async function getProductos(): Promise<Product[]> {
