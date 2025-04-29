@@ -28,7 +28,19 @@ export async function POST(req: Request) {
       quantity: item.quantity,
     }));
 
-    const origin = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    // Get the site URL from environment variables or headers
+    const headersList = headers();
+    const host = headersList.get('host') || 'localhost:3000';
+    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+    const origin = process.env.NEXT_PUBLIC_SITE_URL || `${protocol}://${host}`;
+
+    console.log('Checkout configuration:', {
+      origin,
+      host,
+      protocol,
+      env: process.env.NODE_ENV,
+      siteUrl: process.env.NEXT_PUBLIC_SITE_URL
+    });
 
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
